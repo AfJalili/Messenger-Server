@@ -11,7 +11,6 @@ public class Main {
 
     public static void testCreateNewAccount() {
         DbAccessObj dbAccessObj = new DAO();
-        dbAccessObj.connectToDatabase();
-        dbAccessObj.createNewAccount(new NewAccount("male", "afshin", "matin", "50ShadeS"));
+        dbAccessObj.createNewAccount(new NewAccount("male", "afshinjal", "matin", "50ShadeS"));
     }
 }
