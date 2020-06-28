@@ -52,7 +52,23 @@ public class DAO implements DbAccessObj {
     }
 
     @Override
-    public Boolean checkLogin(LoginData logInForm) {
+    public Boolean checkLogin(LoginData loginData) {
+        //  check loginColl
+        if (!checkLoginsColl(loginData)) { return false; }
+        // TODO if true: change status to online
+        changeUserStatusTo(loginData.getAccountName(), "ONLINE");
         return null;
+    }
+
+    protected boolean checkLoginsColl(LoginData loginData) {
+        // TODO this implementation sucks must change
+        LoginData ld =  DBStuff.loginCollByObj.find(eq("accountName", loginData.getAccountName())).first();
+        return (ld != null) && (ld.getPassword().contentEquals(loginData.getPassword()));
+    }
+
+    protected void changeUserStatusTo(String accountName, String status) { // ONLINE or OFFLINE
+        // TODO for #Matin
+        // TODO go to accounts collection, find account using accountName and change status field
+
     }
 }

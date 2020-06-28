@@ -1,16 +1,24 @@
 package server;
 
+import models.LoginData;
 import models.NewAccount;
 import server.db.DAO;
 import server.db.DbAccessObj;
 
 public class Main {
     public static void main(String[] args) {
-        testCreateNewAccount();
+//        testCreateNewAccount();
+//        testCheckLogin();
     }
 
     public static void testCreateNewAccount() {
         DbAccessObj dbAccessObj = new DAO();
         dbAccessObj.createNewAccount(new NewAccount("male", "afshinjal", "matin", "50ShadeS"));
+
+    }
+
+    public static void testCheckLogin() {
+        DbAccessObj dbAccessObj = new DAO();
+        dbAccessObj.checkLogin(new LoginData("reza", "50ShadeS"));
     }
 }
