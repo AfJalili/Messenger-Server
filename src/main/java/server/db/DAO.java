@@ -26,10 +26,10 @@ public class DAO implements DbAccessObj {
     @Override
     public void connectToDatabase() {
         mongoClient = MongoClients.create();
-        // Creating a codec registry for POJOs
-        CodecRegistry pojoCodecRegistry = fromRegistries(MongoClientSettings.getDefaultCodecRegistry(),
-                fromProviders(PojoCodecProvider.builder().automatic(true).build()));
-        // get handle to databases
+            // Creating a codec registry for POJOs
+            CodecRegistry pojoCodecRegistry = fromRegistries(MongoClientSettings.getDefaultCodecRegistry(),
+                    fromProviders(PojoCodecProvider.builder().automatic(true).build()));
+            // get handle to databases
         messengerDb = mongoClient.getDatabase("messenger_db").withCodecRegistry(pojoCodecRegistry);
         // get handle to collections
         getCollections();
