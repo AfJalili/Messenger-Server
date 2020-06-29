@@ -25,8 +25,5 @@ public class DBStuff {
 
     public static MongoCollection<Document> accountsColl = messengerDb.getCollection("accounts");
     public static MongoCollection<Account> accountsCollByObj = messengerDb.getCollection("accounts", Account.class);
-
-    public static MongoCollection<Document> loginColl = messengerDb.getCollection("login");
-    public static MongoCollection<LoginData> loginCollByObj = messengerDb.getCollection("login", LoginData.class);
-
+    public static MongoCollection<LoginData> accCollByLoginData =  messengerDb.getCollection("accounts", LoginData.class);
 }

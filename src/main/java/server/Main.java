@@ -7,18 +7,18 @@ import server.db.DbAccessObj;
 
 public class Main {
     public static void main(String[] args) {
-//        testCreateNewAccount();
-//        testCheckLogin();
+        testCreateNewAccount();
+        testCheckLogin();
     }
 
     public static void testCreateNewAccount() {
         DbAccessObj dbAccessObj = new DAO();
-        dbAccessObj.createNewAccount(new NewAccount("male", "afshinjal", "matin", "50ShadeS"));
+        dbAccessObj.createNewAccount(new NewAccount("male", "afesh", "matin", "50ShadeS"));
 
     }
 
     public static void testCheckLogin() {
         DbAccessObj dbAccessObj = new DAO();
-        dbAccessObj.checkLogin(new LoginData("reza", "50ShadeS"));
+        dbAccessObj.checkLogin(new LoginData("yas", "50ShadeS"));
     }
 }

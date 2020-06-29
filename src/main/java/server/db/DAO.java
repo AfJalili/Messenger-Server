@@ -21,8 +21,6 @@ public class DAO implements DbAccessObj {
     public Boolean createNewAccount(NewAccount newAccount) {
         //  check availability of accountName
         if (!isAccountNameAvailable(newAccount.getAccountName())) { return false; }
-        //  if true: add info to loginColl
-        addToLogins(new LoginData(newAccount.getAccountName(), newAccount.getPassword()));
         //  create an object of Account.class and fill it with new Account info
         Account account = fillAccountObj(newAccount);
         //  add info to AccountsColl
@@ -31,15 +29,12 @@ public class DAO implements DbAccessObj {
     }
 
     protected boolean isAccountNameAvailable(String accountName) {
-        // TODO this implementation sucks must change
-        LoginData ld =  DBStuff.loginCollByObj.find(eq("accountName", accountName)).first();
+        LoginData ld =  DBStuff.accCollByLoginData.find(eq("accountName", accountName)).first();
         return ld == null;
 
     }
 
-    protected void addToLogins(LoginData loginData) {
-        DBStuff.loginCollByObj.insertOne(loginData);
-    }
+
 
     protected Account fillAccountObj(NewAccount newAccount) {
         return new Account(newAccount.getGender(), newAccount.getAccountName(), newAccount.getUserName(),
@@ -53,16 +48,15 @@ public class DAO implements DbAccessObj {
 
     @Override
     public Boolean checkLogin(LoginData loginData) {
-        //  check loginColl
-        if (!checkLoginsColl(loginData)) { return false; }
+        //  check logins in accounts
+        if (!searchAccountsCollForLogin(loginData)) { return false; }
         // TODO if true: change status to online
         changeUserStatusTo(loginData.getAccountName(), "ONLINE");
         return null;
     }
 
-    protected boolean checkLoginsColl(LoginData loginData) {
-        // TODO this implementation sucks must change
-        LoginData ld =  DBStuff.loginCollByObj.find(eq("accountName", loginData.getAccountName())).first();
+    protected boolean searchAccountsCollForLogin(LoginData loginData) {
+        LoginData ld = DBStuff.accCollByLoginData.find(eq("accountName", loginData.getAccountName())).first();
         return (ld != null) && (ld.getPassword().contentEquals(loginData.getPassword()));
     }
 
