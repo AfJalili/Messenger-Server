@@ -1,53 +1,28 @@
-package models;
-
-import org.bson.types.ObjectId;
+package model;
 
 import java.awt.*;
-import java.util.ArrayList;
 
-public class Account { // user info
+public class NewAccount {
+
     private String gender;
     private String AccountName;  //unique
     private String userName;
     private String password;
     private Image profilePic = null;
-    private String status = "ONLINE";
-    ArrayList<ObjectId> contacts;
-    ArrayList<ObjectId> conversations;
 
-    public Account() {
+    public NewAccount(String gender, String accountName, String userName, String password) {
+        this.gender = gender;
+        AccountName = accountName;
+        this.userName = userName;
+        this.password = password;
     }
 
-    public Account(String gender, String accountName, String userName, String password, Image profilePic) {
+    public NewAccount(String gender, String accountName, String userName, String password, Image profilePic) {
         this.gender = gender;
         AccountName = accountName;
         this.userName = userName;
         this.password = password;
         this.profilePic = profilePic;
-    }
-
-    public String getStatus() {
-        return status;
-    }
-
-    public void setStatus(String status) {
-        this.status = status;
-    }
-
-    public ArrayList<ObjectId> getContacts() {
-        return contacts;
-    }
-
-    public void setContacts(ArrayList<ObjectId> contacts) {
-        this.contacts = contacts;
-    }
-
-    public ArrayList<ObjectId> getConversations() {
-        return conversations;
-    }
-
-    public void setConversations(ArrayList<ObjectId> conversations) {
-        this.conversations = conversations;
     }
 
     public String getGender() {

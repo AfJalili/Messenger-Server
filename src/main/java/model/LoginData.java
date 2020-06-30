@@ -1,4 +1,4 @@
-package models;
+package model;
 
 public class LoginData {
     String accountName;

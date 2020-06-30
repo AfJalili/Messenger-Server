@@ -5,8 +5,10 @@ import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoClients;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
-import models.Account;
-import models.LoginData;
+import model.Account;
+import model.LoginData;
+import model.Message;
+import model.PrivateChat;
 import org.bson.Document;
 import org.bson.codecs.configuration.CodecRegistry;
 import org.bson.codecs.pojo.PojoCodecProvider;
@@ -23,7 +25,9 @@ public class DBStuff {
 
     public static MongoDatabase messengerDb = mongoClient.getDatabase("messenger_db").withCodecRegistry(pojoCodecRegistry);
 
-    public static MongoCollection<Document> accountsColl = messengerDb.getCollection("accounts");
-    public static MongoCollection<Account> accountsCollByObj = messengerDb.getCollection("accounts", Account.class);
-    public static MongoCollection<LoginData> accCollByLoginData =  messengerDb.getCollection("accounts", LoginData.class);
+    public static MongoCollection<Document> accountsCol = messengerDb.getCollection("accounts");
+    public static MongoCollection<Account> accountsColByObj = messengerDb.getCollection("accounts", Account.class);
+    public static MongoCollection<LoginData> accColByLoginData =  messengerDb.getCollection("accounts", LoginData.class);
+    public static MongoCollection<Message> messageCol =  messengerDb.getCollection("messages", Message.class);
+    public static MongoCollection<PrivateChat> pvChatCol = messengerDb.getCollection("conversations", PrivateChat.class);
 }
