@@ -25,7 +25,7 @@ public class ClientThread implements Runnable {
 
     @Override
     public void run() {
-
+        // TODO there is problem working with readObject() method. it cant read null
         try {
             oIStream = new ObjectInputStream(new BufferedInputStream(clientSocket.getInputStream()));
             oOStream = new ObjectOutputStream(new BufferedOutputStream(clientSocket.getOutputStream()));

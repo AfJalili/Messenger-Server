@@ -1,5 +1,9 @@
 package model;
 
+/**
+ * Data transfer Class
+ */
+
 public class LoginData {
     String accountName;
     String password;

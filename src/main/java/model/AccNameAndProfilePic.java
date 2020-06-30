@@ -1,5 +1,9 @@
 package model;
 
+/**
+ * Data transfer Class
+ */
+
 public class AccNameAndProfilePic {
     private String accountName;
     // profilePic

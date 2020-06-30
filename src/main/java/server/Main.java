@@ -1,5 +1,6 @@
 package server;
 
+import connection.ClientThread;
 import model.LoginData;
 import model.NewAccount;
 import model.NewMessage;
@@ -16,8 +17,8 @@ public class Main {
 //        testCreateNewAccount();
 //        testCheckLogin();
 //        testMessageHandler();
-//        testWaitForClient();
-        testGetAllUsersInfo();
+        testWaitForClient();
+//        testGetAllUsersInfo();
 
     }
 
@@ -44,6 +45,9 @@ public class Main {
             Socket client = serverSocket.accept();
             i++;
             System.out.println(i + " client connected");
+            ClientThread clientThread = new ClientThread(client);
+            Thread thread = new Thread(clientThread);
+            thread.start();
         }
     }
 

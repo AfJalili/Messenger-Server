@@ -1,7 +1,10 @@
 package model;
 
-import java.awt.*;
 
+import java.awt.*;
+/**
+ * Data transfer Class
+ */
 public class NewAccount {
 
     private String gender;
