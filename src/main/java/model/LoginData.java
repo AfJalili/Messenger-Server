@@ -1,10 +1,12 @@
 package model;
 
+import java.io.Serializable;
+
 /**
  * Data transfer Class
  */
 
-public class LoginData {
+public class LoginData implements Serializable {
     String accountName;
     String password;
 

@@ -1,10 +1,12 @@
 package model;
 
+import java.io.Serializable;
+
 /**
  * Data transfer Class
  */
 
-public class AccNameAndProfilePic {
+public class AccNameAndProfilePic implements Serializable {
     private String accountName;
     // profilePic
 

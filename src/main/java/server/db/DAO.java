@@ -2,12 +2,15 @@ package server.db;
 
 import com.mongodb.BasicDBObject;
 import com.mongodb.client.MongoCollection;
+import com.mongodb.client.model.Updates;
 import enums.UserStatus;
 import model.*;
 import org.bson.Document;
 
+import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 import java.util.function.Consumer;
 
 import static com.mongodb.client.model.Filters.eq;
@@ -26,7 +29,19 @@ public class DAO implements DbAccessObj {
         Account account = fillAccountObj(newAccount);
         //  add info to AccountsColl
         saveAccount(account);
+        // TODO create contact list and conversation list
+        createFieldInAccountDoc( "list", "contacts", newAccount.getAccountName());
+        createFieldInAccountDoc( "list", "conversationIds", newAccount.getAccountName());
+
         return true;
+    }
+
+    protected void createFieldInAccountDoc(String type, String fieldName, String accName) {
+        if (type.equals("list")) {
+            List<Long> list = new ArrayList<>();
+            DBStuff.accountsCol.findOneAndUpdate(eq("accountName", accName), Updates.pushEach(fieldName, list));
+        }
+
     }
 
     protected boolean isAccountNameAvailable(String accountName) {
@@ -47,15 +62,7 @@ public class DAO implements DbAccessObj {
         DBStuff.accountsColByObj.insertOne(account);
     }
 
-    @Override
-    public Boolean checkLogin(LoginData loginData) {
-        //  check logins in accounts
-        if (!searchAccountsCollForLogin(loginData)) { return false; }
-        // TODO if true: change status to online
-        changeUserStatusTo(loginData.getAccountName(), UserStatus.ONLINE);
-        return null;
-    }
-
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     @Override
     public Boolean MessageHandler(NewMessage newMessage) {
         if (newMessage.getConversationId() == 0) {
@@ -68,9 +75,19 @@ public class DAO implements DbAccessObj {
         Message m = fillMessageObj(newMessage);
         saveMessage(m);
         // TODO notify receiver(s)
+        return true;
+    }
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    @Override
+    public Boolean checkLogin(LoginData loginData) {
+        //  check logins in accounts
+        if (!searchAccountsCollForLogin(loginData)) { return false; }
+        changeUserStatusTo(loginData.getAccountName(), UserStatus.ONLINE);
         return null;
     }
 
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     @Override
     public ArrayList<AccNameAndProfilePic> getAllUsersInfo() {
         MongoCollection<AccNameAndProfilePic> accCol = DBStuff.messengerDb.getCollection("accounts", AccNameAndProfilePic.class);
@@ -106,6 +123,7 @@ public class DAO implements DbAccessObj {
     }
 
     protected void addConversationIdToUserAccount(long conversationId) {
+        
         // TODO for #Matin
         // TODO go to accounts collection, create an array for conversation id if not exist and add this Id to array
     }

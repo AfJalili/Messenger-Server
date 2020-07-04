@@ -9,6 +9,7 @@ import server.db.DbAccessObj;
 
 import java.io.*;
 import java.net.Socket;
+import java.util.Objects;
 
 public class ClientThread implements Runnable {
     Account onlineAccount;
@@ -26,31 +27,39 @@ public class ClientThread implements Runnable {
     @Override
     public void run() {
         // TODO there is problem working with readObject() method. it cant read null
+        BufferedInputStream bIS;
+        BufferedOutputStream bOS;
         try {
-            oIStream = new ObjectInputStream(new BufferedInputStream(clientSocket.getInputStream()));
-            oOStream = new ObjectOutputStream(new BufferedOutputStream(clientSocket.getOutputStream()));
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        while (clientSocket.isConnected()) {
-            try {
-                inputObject = oIStream.readObject();
-                if (inputObject != null) {
-                    doService(inputObject);
+            bOS = new BufferedOutputStream(clientSocket.getOutputStream());
+            bIS = new BufferedInputStream(clientSocket.getInputStream());
+            oOStream = new ObjectOutputStream(bOS);
+            oOStream.flush();
+            oIStream = new ObjectInputStream(bIS);
+
+            while (clientSocket.isConnected()) {
+                if (bIS.available() > 0) {
+                    inputObject = oIStream.readObject();
                 }
-            } catch (IOException | ClassNotFoundException e) {
-                e.printStackTrace();
+                if (inputObject != null) {
+                    System.out.println(inputObject.toString());
+                    doService(inputObject);
+                    inputObject = null;
+                }
             }
+        } catch (IOException | ClassNotFoundException e) {
+//                e.printStackTrace();
+            e.getMessage();
+            System.out.println("socket exception");
         }
-        // (optional)todo if connection get closed a method must save its user last activity
+
+        // todo if connection get closed a method must save its user last activity
     }
 
 
 
-    void doService(Object inputObject) {
+    void doService(Object inputObject) throws IOException {
         // todo call database method and get response object
         Object outObj = null;
-        // TODO doSomething
         if (inputObject instanceof NewAccount) {
             outObj = dbAccessObj.createNewAccount((NewAccount) inputObject);
         } else if (inputObject instanceof NewMessage) {
@@ -58,8 +67,13 @@ public class ClientThread implements Runnable {
         } else if (inputObject instanceof LoginData) {
             outObj = dbAccessObj.checkLogin((LoginData) inputObject);
         }
-        sendDataToClient(outObj);
+        if (outObj != null)
+        oOStream.writeObject(outObj);
+        oOStream.flush();
+//        sendDataToClient(outObj); // TODO this method does not work, it throws exception
+        System.out.println(Objects.requireNonNull(outObj).toString());
 
+        outObj = null;
     }
 
     protected void sendDataToClient(Object outputObject)  {
@@ -73,4 +87,5 @@ public class ClientThread implements Runnable {
         }
 
     }
+
 }

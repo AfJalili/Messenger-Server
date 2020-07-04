@@ -1,9 +1,11 @@
 package model;
 
+import java.io.Serializable;
+
 /**
  * Data Transfer object
  */
-public class NewMessage {
+public class NewMessage implements Serializable {
     private long conversationId = 0;
     private String senderAccName;
     private String receiverAccName;

@@ -39,7 +39,7 @@ public class Main {
     }
 
     public static void testWaitForClient() throws IOException {
-        ServerSocket serverSocket = new ServerSocket(3000);
+        ServerSocket serverSocket = new ServerSocket(8888);
         int i = 0;
         while(true) {
             Socket client = serverSocket.accept();
@@ -47,7 +47,9 @@ public class Main {
             System.out.println(i + " client connected");
             ClientThread clientThread = new ClientThread(client);
             Thread thread = new Thread(clientThread);
+            thread.setDaemon(true);
             thread.start();
+
         }
     }
 

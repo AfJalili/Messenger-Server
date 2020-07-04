@@ -2,10 +2,12 @@ package model;
 
 
 import java.awt.*;
+import java.io.Serializable;
+
 /**
  * Data transfer Class
  */
-public class NewAccount {
+public class NewAccount implements Serializable {
 
     private String gender;
     private String AccountName;  //unique
