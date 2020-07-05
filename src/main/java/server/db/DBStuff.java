@@ -24,7 +24,6 @@ public class DBStuff {
             fromProviders(PojoCodecProvider.builder().automatic(true).build()));
 
     public static MongoDatabase messengerDb = mongoClient.getDatabase("messenger_db").withCodecRegistry(pojoCodecRegistry);
-
     public static MongoCollection<Document> accountsCol = messengerDb.getCollection("accounts");
     public static MongoCollection<Account> accountsColByObj = messengerDb.getCollection("accounts", Account.class);
     public static MongoCollection<LoginData> accColByLoginData =  messengerDb.getCollection("accounts", LoginData.class);

@@ -17,14 +17,17 @@ public class Main {
 //        testCreateNewAccount();
 //        testCheckLogin();
 //        testMessageHandler();
-        testWaitForClient();
+//        testWaitForClient();
 //        testGetAllUsersInfo();
-
+        String str = "1W: afshin";
+        System.out.println(str.substring(4, str.length()-1));
     }
 
     public static void testCreateNewAccount() {
         DbAccessObj dbAccessObj = new DAO();
-        dbAccessObj.createNewAccount(new NewAccount("male", "afesh", "matin", "50ShadeS"));
+        dbAccessObj.createNewAccount(new NewAccount("male", "afshin", "af", "50ShadeS"));
+        dbAccessObj.createNewAccount(new NewAccount("male", "reza", "re", "50ShadeS"));
+        dbAccessObj.createNewAccount(new NewAccount("male", "amatin", "ma", "50ShadeS"));
 
     }
 
@@ -35,7 +38,10 @@ public class Main {
 
     public static  void testMessageHandler() {
         DbAccessObj dbAccessObj = new DAO();
-        dbAccessObj.MessageHandler(new NewMessage(1593522667, "afshin", "reza", "hi afshin", new Date()));
+//        dbAccessObj.messageHandler(new NewMessage( "afshin", "reza", "hi reza", new Date()));
+//        dbAccessObj.messageHandler(new NewMessage( "matin", "reza", "hi reza", new Date()));
+        dbAccessObj.messageHandler(new NewMessage(1593905714, "reza", "matin", "hi matin", new Date()));
+//        dbAccessObj.messageHandler(new NewMessage(1593522667, "reza", "matin", "hi matin", new Date()));
     }
 
     public static void testWaitForClient() throws IOException {

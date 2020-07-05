@@ -1,8 +1,9 @@
 package model;
 
+import java.io.Serializable;
 import java.util.Date;
 
-public class PrivateChat {
+public class PrivateChat implements Serializable {
     private long chatId;  // using system nano time to create Id
     private String member1; // account name
     private String member2; // account name

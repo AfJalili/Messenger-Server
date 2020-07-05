@@ -1,6 +1,5 @@
 package connection;
 
-import model.Account;
 import model.LoginData;
 import model.NewAccount;
 import model.NewMessage;
@@ -12,7 +11,7 @@ import java.net.Socket;
 import java.util.Objects;
 
 public class ClientThread implements Runnable {
-    Account onlineAccount;
+    String onlineUserAccName;
     Socket clientSocket;
     public ObjectInputStream oIStream;
     public ObjectOutputStream oOStream;
@@ -61,11 +60,24 @@ public class ClientThread implements Runnable {
         // todo call database method and get response object
         Object outObj = null;
         if (inputObject instanceof NewAccount) {
-            outObj = dbAccessObj.createNewAccount((NewAccount) inputObject);
+            NewAccount na = (NewAccount) inputObject;
+            if (dbAccessObj.createNewAccount(na)) {
+                this.onlineUserAccName = na.getAccountName();
+                outObj = true;
+            } else { outObj = false; }
+
         } else if (inputObject instanceof NewMessage) {
-            outObj = dbAccessObj.MessageHandler((NewMessage) inputObject);
+            outObj = dbAccessObj.messageHandler((NewMessage) inputObject);
         } else if (inputObject instanceof LoginData) {
-            outObj = dbAccessObj.checkLogin((LoginData) inputObject);
+            LoginData ld = (LoginData) inputObject;
+            if (dbAccessObj.checkLogin((LoginData) inputObject)) {
+                this.onlineUserAccName = ld.getAccountName();
+                outObj = true;
+            } else { outObj = false; }
+        } else if (inputObject.toString().contains("1W: ")) {
+            String str = inputObject.toString();
+            this.onlineUserAccName = str.substring(4, str.length());
+            // TODO go to listener mode
         }
         if (outObj != null)
         oOStream.writeObject(outObj);
@@ -83,9 +95,14 @@ public class ClientThread implements Runnable {
             oOStream.flush();
         } catch (IOException e) {
             e.printStackTrace();
-            System.out.println("ERROR occurred while sending data to user : " + onlineAccount.getAccountName());
+            System.out.println("ERROR occurred while sending data to user : ");
         }
 
     }
+
+    void listener(String accName) {
+
+    }
+
 
 }

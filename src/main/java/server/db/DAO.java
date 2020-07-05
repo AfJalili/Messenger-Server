@@ -7,7 +7,6 @@ import enums.UserStatus;
 import model.*;
 import org.bson.Document;
 
-import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -64,7 +63,7 @@ public class DAO implements DbAccessObj {
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     @Override
-    public Boolean MessageHandler(NewMessage newMessage) {
+    public Boolean messageHandler(NewMessage newMessage) {
         if (newMessage.getConversationId() == 0) {
             // TODO if not: create conversation and add it to user account info
             return createNewConversation(newMessage);
@@ -97,6 +96,34 @@ public class DAO implements DbAccessObj {
         return resultList;
     }
 
+    @Override
+    public ArrayList<NewMessage> newMessageNotifier(String accName) {
+        //TODO implement listener
+        return null;
+    }
+
+    @Override
+    public ArrayList<Object> getConversationInfo(String accName) {
+        ArrayList<Object> result = new ArrayList<>();
+        result.addAll(getPvChatInfo(accName));
+        // TODO get group info
+        return result;
+    }
+
+    protected ArrayList<Long> getConversationIdList(String accName) {
+        Document doc = DBStuff.accountsCol.find(eq("accountName", accName)).first();
+        return (ArrayList<Long>) doc.get("conversationIds");
+    }
+    protected ArrayList<PrivateChat> getPvChatInfo(String accName) {
+        ArrayList<PrivateChat> result = new ArrayList<>();
+        ArrayList<Long> conIds = getConversationIdList(accName);
+        for (Long id : conIds) {
+            PrivateChat pvc =  DBStuff.pvChatCol.find(eq("chatId", id)).first();
+            if (pvc != null) { result.add(pvc); }
+        }
+        return result;
+    }
+
     // TODO must change
     protected void updateConversationInfo(long conversationId, Date lastMessageDate, String lastMessageContent) {
         BasicDBObject update =new BasicDBObject()
@@ -111,7 +138,8 @@ public class DAO implements DbAccessObj {
                 firstMessage.getReceiverAccName(), firstMessage.getDate(), firstMessage.getContent());
         saveConversationInfo(pvChatInfo);
         firstMessage.setConversationId(pvChatInfo.getChatId());
-        addConversationIdToUserAccount(pvChatInfo.getChatId());
+        addConversationIdToUserAccount(pvChatInfo.getChatId(), pvChatInfo.getMember1());
+        addConversationIdToUserAccount(pvChatInfo.getChatId(), pvChatInfo.getMember2());
         Message m = fillMessageObj(firstMessage);
         saveMessage(m);
         // TODO notify receiver(s)
@@ -122,10 +150,10 @@ public class DAO implements DbAccessObj {
         DBStuff.pvChatCol.insertOne((PrivateChat) conInfo);
     }
 
-    protected void addConversationIdToUserAccount(long conversationId) {
-        
-        // TODO for #Matin
-        // TODO go to accounts collection, create an array for conversation id if not exist and add this Id to array
+    protected void addConversationIdToUserAccount(long conversationId, String accName) {
+        DBStuff.accountsCol.findOneAndUpdate(eq("accountName", accName),
+                   Updates.addToSet("conversationIds", conversationId));
+
     }
 
     protected Message fillMessageObj(NewMessage nM) {

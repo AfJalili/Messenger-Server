@@ -14,8 +14,12 @@ public interface DbAccessObj {
 
     Boolean checkLogin(LoginData loginData);
 
-     Boolean MessageHandler(NewMessage newMessage);
+    Boolean messageHandler(NewMessage newMessage);
 
      ArrayList<AccNameAndProfilePic> getAllUsersInfo();
+
+    ArrayList<NewMessage> newMessageNotifier(String accName);
+
+    ArrayList<Object> getConversationInfo(String accName);
 
 }
