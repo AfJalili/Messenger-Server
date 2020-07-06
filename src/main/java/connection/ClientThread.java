@@ -3,8 +3,9 @@ package connection;
 import model.LoginData;
 import model.NewAccount;
 import model.NewMessage;
+import model.RequestConversation;
 import server.db.DAO;
-import server.db.DbAccessObj;
+import server.db.DAOImpl;
 
 import java.io.*;
 import java.net.Socket;
@@ -16,7 +17,7 @@ public class ClientThread implements Runnable {
     public ObjectInputStream oIStream;
     public ObjectOutputStream oOStream;
     Object inputObject;
-    DbAccessObj dbAccessObj = new DAO();
+    DAO DAO = new DAOImpl();
 
     public ClientThread(Socket clientSocket) {
         this.clientSocket = clientSocket;
@@ -25,13 +26,14 @@ public class ClientThread implements Runnable {
 
     @Override
     public void run() {
-        // TODO there is problem working with readObject() method. it cant read null
+
         BufferedInputStream bIS;
         BufferedOutputStream bOS;
         try {
             bOS = new BufferedOutputStream(clientSocket.getOutputStream());
             bIS = new BufferedInputStream(clientSocket.getInputStream());
             oOStream = new ObjectOutputStream(bOS);
+            System.out.println("flushed");
             oOStream.flush();
             oIStream = new ObjectInputStream(bIS);
 
@@ -46,7 +48,7 @@ public class ClientThread implements Runnable {
                 }
             }
         } catch (IOException | ClassNotFoundException e) {
-                e.printStackTrace();
+            e.printStackTrace();
             e.getMessage();
             System.out.println("socket exception");
         }
@@ -60,61 +62,55 @@ public class ClientThread implements Runnable {
         // call database method and get response object
         Object outObj = null;
         if (inputObject instanceof NewAccount) {
+
             NewAccount na = (NewAccount) inputObject;
-            if (dbAccessObj.createNewAccount(na)) {
+            if (DAO.createNewAccount(na)) {
                 this.onlineUserAccName = na.getAccountName();
                 outObj = true;
             } else { outObj = false; }
 
         } else if (inputObject instanceof NewMessage) {
-            outObj = dbAccessObj.messageHandler((NewMessage) inputObject);
+
+            outObj = DAO.messageHandler((NewMessage) inputObject);
 
         } else if (inputObject instanceof LoginData) {
+
             LoginData ld = (LoginData) inputObject;
-            if (dbAccessObj.checkLogin((LoginData) inputObject)) {
+            if (DAO.checkLogin((LoginData) inputObject)) {
                 this.onlineUserAccName = ld.getAccountName();
                 outObj = true;
             } else { outObj = false; }
 
         } else if (inputObject.toString().contains("1W: ")) {
+
             String str = inputObject.toString();
             this.onlineUserAccName = str.substring(4);
             listenerMode(onlineUserAccName);
 
         } else if (inputObject.toString().equals("setting up user profile view")) {
-            outObj = dbAccessObj.getUserInfo(onlineUserAccName);
+
+            outObj = DAO.getUserInfo(onlineUserAccName);
 
         } else if (inputObject.toString().contains("search: ")) {
-            // TODO Search fo accountName
-            System.out.println("calling search");
-            outObj = dbAccessObj.searchAccName(inputObject.toString().substring(8));
+
+            outObj = DAO.searchAccName(inputObject.toString().substring(8));
+
+        } else if (inputObject instanceof RequestConversation) {
+
+            outObj = DAO.getAllMessagesOfConversation((RequestConversation) inputObject);
         }
 
         if (outObj != null) {
             oOStream.writeObject(outObj);
             oOStream.flush();
         }
-//        sendDataToClient(outObj); // TODO this method does not work, it throws exception
         System.out.println(Objects.requireNonNull(outObj).toString());
-
         outObj = null;
-    }
-
-    protected void sendDataToClient(Object outputObject)  {
-        try {
-            if (outputObject != null)
-            oOStream.writeObject(outputObject);
-            oOStream.flush();
-        } catch (IOException e) {
-            e.printStackTrace();
-            System.out.println("ERROR occurred while sending data to user : ");
-        }
-
     }
 
     void listenerMode(String accName) {
         while (true) {
-            NewMessage nM = dbAccessObj.newMessageListener(accName);
+            NewMessage nM = DAO.newMessageListener(accName);
             if (nM != null) {
                 try {
                     oOStream.writeObject(nM);

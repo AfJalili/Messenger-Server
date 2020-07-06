@@ -1,14 +1,11 @@
-import model.LoginData;
-import model.NewAccount;
 import model.NewMessage;
-import model.RequestConversation;
 
 import java.io.*;
 import java.net.Socket;
 import java.util.Date;
 import java.util.Scanner;
 
-public class Client_1 {
+public class Clinet_3 {
     public static void main(String[] args) throws IOException, ClassNotFoundException, InterruptedException {
         Socket s = new Socket("localhost", 8888);
         BufferedOutputStream bos = new BufferedOutputStream(s.getOutputStream());
@@ -42,8 +39,7 @@ public class Client_1 {
         while (true) {
             Scanner scanner = new Scanner(System.in);
             String str = scanner.nextLine();
-            oos.writeObject(new NewMessage( 1594066869,"afshin", str,false, new Date()));
-            oos.writeObject(new RequestConversation(1594066869));
+            oos.writeObject(new NewMessage(1594066869, "matin", "afshin", str, false, new Date()));
             oos.flush();
             if (bis.available() > 0) {
                 System.out.println(ois.readObject().toString());
@@ -53,5 +49,5 @@ public class Client_1 {
 
 
 
-    }
+        }
 }

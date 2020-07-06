@@ -13,8 +13,8 @@ import org.bson.codecs.pojo.PojoCodecProvider;
 import static org.bson.codecs.configuration.CodecRegistries.fromProviders;
 import static org.bson.codecs.configuration.CodecRegistries.fromRegistries;
 
-public class DBStuff {
-    public static MongoClient mongoClient = MongoClients.create();
+public class MongoDBProperty {
+    public static MongoClient mongoClient = MongoClients.create("mongodb://localhost:27017");
 
     // Creating a codec registry for POJOs
     public static CodecRegistry  pojoCodecRegistry = fromRegistries(MongoClientSettings.getDefaultCodecRegistry(),

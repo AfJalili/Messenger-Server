@@ -14,6 +14,14 @@ public class NewMessage implements Serializable {
     private boolean containsFile;
     private java.util.Date Date;
 
+    public NewMessage(long conversationId, String senderAccName, String content, boolean containsFile, java.util.Date date) {
+        this.conversationId = conversationId;
+        this.senderAccName = senderAccName;
+        this.content = content;
+        this.containsFile = containsFile;
+        Date = date;
+    }
+
     public NewMessage(long conversationId, String senderAccName, String receiverAccName, String content, java.util.Date date) {
         this.conversationId = conversationId;
         this.senderAccName = senderAccName;

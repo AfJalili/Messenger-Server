@@ -1,0 +1,268 @@
+package server.db;
+
+import com.mongodb.BasicDBObject;
+import com.mongodb.client.FindIterable;
+import com.mongodb.client.MongoCollection;
+import com.mongodb.client.model.Filters;
+import com.mongodb.client.model.Updates;
+import enums.UserStatus;
+import model.*;
+import org.bson.Document;
+
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+import java.util.function.Consumer;
+
+import static com.mongodb.client.model.Filters.*;
+import static org.bson.codecs.configuration.CodecRegistries.fromProviders;
+import static org.bson.codecs.configuration.CodecRegistries.fromRegistries;
+
+public class DAOImpl implements DAO {
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    @Override
+    public Boolean createNewAccount(NewAccount newAccount) {
+        //  check availability of accountName
+        if (!isAccountNameAvailable(newAccount.getAccountName())) { return false; }
+        //  create an object of Account.class and fill it with new Account info
+        Account account = fillAccountObj(newAccount);
+        //  add info to AccountsColl
+        saveAccount(account);
+        // TODO create contact list and conversation list
+        createFieldInAccountDoc( "list", "contacts", newAccount.getAccountName());
+        createFieldInAccountDoc( "list", "conversationIds", newAccount.getAccountName());
+
+        return true;
+    }
+
+    protected void createFieldInAccountDoc(String type, String fieldName, String accName) {
+        if (type.equals("list")) {
+            List<Long> list = new ArrayList<>();
+            MongoDBProperty.accountsCol.findOneAndUpdate(eq("accountName", accName), Updates.pushEach(fieldName, list));
+        }
+
+    }
+
+    protected boolean isAccountNameAvailable(String accountName) {
+        LoginData ld =  MongoDBProperty.accColByLoginData.find(eq("accountName", accountName)).first();
+        return ld == null;
+
+    }
+
+
+    // TODO profile pic problem
+    protected Account fillAccountObj(NewAccount newAccount) {
+        return new Account(newAccount.getGender(), newAccount.getAccountName(), newAccount.getUserName(),
+                newAccount.getPassword(), newAccount.getProfilePic());
+    }
+
+    protected void saveAccount(Account account) {
+        MongoCollection<Account> accCollObj = MongoDBProperty.messengerDb.getCollection("accounts", Account.class);
+        MongoDBProperty.accountsColByObj.insertOne(account);
+    }
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    @Override
+    public Boolean messageHandler(NewMessage newMessage) {
+        if (newMessage.getConversationId() == 0) {
+            // TODO if not: create conversation and add it to user account info
+            return createNewPvConversation(newMessage);
+        }
+        // TODO must change, no need for message content
+        updateConversationInfo(newMessage.getConversationId(), newMessage.getDate(), newMessage.getContent());
+        //save the message
+        Message m = fillMessageObj(newMessage);
+        saveMessage(m);
+
+        return true;
+    }
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    @Override
+    public Boolean checkLogin(LoginData loginData) {
+        //  check logins in accounts
+        if (!searchAccountsCollForLogin(loginData)) { return false; }
+        changeUserStatusTo(loginData.getAccountName(), UserStatus.ONLINE);
+        return true;
+    }
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    @Override
+    public ArrayList<AccNameAndProfilePic> getAllUsersInfo() {
+        MongoCollection<AccNameAndProfilePic> accCol = MongoDBProperty.messengerDb.getCollection("accounts", AccNameAndProfilePic.class);
+        ArrayList<AccNameAndProfilePic> resultList = new ArrayList<>();
+        Consumer<AccNameAndProfilePic> extractBlock = resultList::add;
+        accCol.find().forEach(extractBlock);
+        return resultList;
+    }
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    @Override
+    public ArrayList<Object> getConversationInfo(String accName) {
+        ArrayList<Object> result = new ArrayList<>();
+        result.addAll(getPvChatInfo(accName));
+        // TODO get group info
+        return result;
+    }
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    @Override
+    public UserInfo getUserInfo(String accName) {
+        ArrayList<ConversationInfo> conInfos = new ArrayList<>(getConversationInfos(accName));
+        // TODO get contacts
+        Account ac = MongoDBProperty.accountsColByObj.find(eq("accountName", accName)).first();
+        if (ac != null) {
+            UserInfo result = new UserInfo(ac.getGender(), ac.getAccountName(), ac.getUserName(), conInfos);
+            return result;
+        }
+        System.out.println("returning null in UserInfo");
+        return null;
+    }
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    @Override
+    public NewMessage newMessageListener(String accName) {
+        ArrayList<Long> conIds = getConversationIdList(accName);
+        for (Long id : conIds) {
+            BasicDBObject newDocument = new BasicDBObject(); newDocument.put("seen", true);
+            BasicDBObject updateObject = new BasicDBObject(); updateObject.put("$set", newDocument);
+            Message m = MongoDBProperty.messageCol.findOneAndUpdate(Filters.and(eq("conversationId", id),
+                    eq("seen", false), Filters.not(eq("sender", accName))), updateObject);
+            if (m != null) {
+                return fillNewMessageObj(m);
+            }
+        }
+        return null;
+    }
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    @Override
+    public AllMessages getAllMessagesOfConversation(RequestConversation rc) {
+        FindIterable<Message> messages = MongoDBProperty.messageCol.find(eq("conversationId", rc.id));
+        ArrayList<Message> m = new ArrayList<>();
+        for (Message message: messages) {
+            m.add(message);
+        }
+        return new AllMessages(m);
+    }
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    @Override
+    public MemberInfo searchAccName(String accName) {
+        MemberInfo result = MongoDBProperty.accColByMemberInfo.find(eq("accountName", accName)).first();
+        if (result == null) {
+            return new MemberInfo(null, "null", null, null);
+        }
+        return result;
+    }
+
+    protected NewMessage fillNewMessageObj(Message m) {
+        return new NewMessage(m.getConversationId(), m.getSender(), m.getReceiver(), m.getContent(),m.isContainsFile(), m.getDate());
+    }
+
+    protected ArrayList<ConversationInfo> getConversationInfos(String accName) {
+        ArrayList<Long> conIds = new ArrayList<>(getConversationIdList(accName));
+//        if (conIds.size() == 0) { return null; }
+        ArrayList<ConversationInfo> result = new ArrayList<>();
+        for (Long id : conIds) {
+            PrivateChat pvc = MongoDBProperty.pvChatCol.find(eq("chatId", id)).first();
+            if (pvc != null) {
+                // creating an arraylist of members accountName
+                ArrayList<String> memberlist = new ArrayList<>();
+                memberlist.add(pvc.getMember1()); memberlist.add(pvc.getMember2());
+
+                result.add(new ConversationInfo(id, "pv", findLastMessage(id, pvc.getLastMessageDate()),
+                       getMembersInfo(memberlist), pvc.getLastMessageDate()));
+            }
+        }
+        return result;
+    }
+
+    protected ArrayList<MemberInfo> getMembersInfo(ArrayList<String> membersAccName) {
+        ArrayList<MemberInfo> result = new ArrayList<>();
+        for (String accName : membersAccName) {
+            MemberInfo mi = MongoDBProperty.accColByMemberInfo.find(eq("accountName", accName)).first();
+            if (mi != null) { result.add(mi); }
+        }
+        return result;
+    }
+    protected Message findLastMessage(Long conversationId, Date lastMessageDate) {
+        // TODO Im not sure about line below
+        Message message = MongoDBProperty.messageCol.find(Filters.and(eq("conversationId", conversationId), eq("date", lastMessageDate))).first();
+        return message;
+    }
+
+
+    protected ArrayList<Long> getConversationIdList(String accName) {
+        Document doc = MongoDBProperty.accountsCol.find(eq("accountName", accName)).first();
+        return (ArrayList<Long>) doc.get("conversationIds");
+    }
+    protected ArrayList<PrivateChat> getPvChatInfo(String accName) {
+        ArrayList<PrivateChat> result = new ArrayList<>();
+        ArrayList<Long> conIds = getConversationIdList(accName);
+        for (Long id : conIds) {
+            PrivateChat pvc =  MongoDBProperty.pvChatCol.find(eq("chatId", id)).first();
+            if (pvc != null) { result.add(pvc); }
+        }
+        return result;
+    }
+
+    // TODO must change
+    protected void updateConversationInfo(long conversationId, Date lastMessageDate, String lastMessageContent) {
+        BasicDBObject update =new BasicDBObject()
+                .append("lastMessageDate", lastMessageDate)
+                .append("lastMessageContent", lastMessageContent);
+        BasicDBObject newInfo = new BasicDBObject().append("$set", update);
+        MongoDBProperty.pvChatCol.updateOne(eq("chatId", conversationId), newInfo);
+    }
+
+    protected boolean createNewPvConversation(NewMessage firstMessage) {
+        PrivateChat pvChatInfo = new PrivateChat(getId(), firstMessage.getSenderAccName(),
+                firstMessage.getReceiverAccName(), firstMessage.getDate(), firstMessage.getContent());
+        saveConversationInfo(pvChatInfo);
+        firstMessage.setConversationId(pvChatInfo.getChatId());
+        addConversationIdToUserAccount(pvChatInfo.getChatId(), pvChatInfo.getMember1());
+        addConversationIdToUserAccount(pvChatInfo.getChatId(), pvChatInfo.getMember2());
+        Message m = fillMessageObj(firstMessage);
+        saveMessage(m);
+        return true;
+    }
+    // TODO this implementation must change
+    protected void saveConversationInfo(Object conInfo) {
+        MongoDBProperty.pvChatCol.insertOne((PrivateChat) conInfo);
+    }
+
+    protected void addConversationIdToUserAccount(long conversationId, String accName) {
+        MongoDBProperty.accountsCol.findOneAndUpdate(eq("accountName", accName),
+                   Updates.addToSet("conversationIds", conversationId));
+
+    }
+
+    protected Message fillMessageObj(NewMessage nM) {
+        return new Message(nM.getConversationId(), nM.getSenderAccName(),
+                nM.getReceiverAccName(), nM.getContent(), nM.getDate(),false, nM.isContainsFile());
+    }
+
+    protected void saveMessage(Message message) {
+        MongoDBProperty.messageCol.insertOne(message);
+    }
+
+    protected boolean searchAccountsCollForLogin(LoginData loginData) {
+        LoginData ld = MongoDBProperty.accColByLoginData.find(eq("accountName", loginData.getAccountName())).first();
+        return (ld != null) && (ld.getPassword().contentEquals(loginData.getPassword()));
+    }
+
+
+    protected void changeUserStatusTo(String accountName, UserStatus status) { // ONLINE or OFFLINE
+        // TODO for #Matin
+        // TODO go to accounts collection, find account using accountName and change status field
+
+    }
+
+    public synchronized long getId() {
+        try {
+            Thread.sleep(1500);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        return new Date().getTime() / 1000;
+    }
+}

@@ -5,7 +5,7 @@ import model.LoginData;
 import model.NewAccount;
 import model.NewMessage;
 import server.db.DAO;
-import server.db.DbAccessObj;
+import server.db.DAOImpl;
 
 import java.io.IOException;
 import java.net.ServerSocket;
@@ -23,24 +23,24 @@ public class Main {
     }
 
     public static void testCreateNewAccount() {
-        DbAccessObj dbAccessObj = new DAO();
-        dbAccessObj.createNewAccount(new NewAccount("male", "afshin", "af", "50ShadeS"));
-        dbAccessObj.createNewAccount(new NewAccount("male", "reza", "re", "50ShadeS"));
-        dbAccessObj.createNewAccount(new NewAccount("male", "amatin", "ma", "50ShadeS"));
+        DAO DAO = new DAOImpl();
+        DAO.createNewAccount(new NewAccount("male", "afshin", "af", "50ShadeS"));
+        DAO.createNewAccount(new NewAccount("male", "reza", "re", "50ShadeS"));
+        DAO.createNewAccount(new NewAccount("male", "amatin", "ma", "50ShadeS"));
 
     }
 
     public static void testCheckLogin() {
-        DbAccessObj dbAccessObj = new DAO();
-        dbAccessObj.checkLogin(new LoginData("yas", "50ShadeS"));
+        DAO DAO = new DAOImpl();
+        DAO.checkLogin(new LoginData("yas", "50ShadeS"));
     }
 
     public static  void testMessageHandler() {
-        DbAccessObj dbAccessObj = new DAO();
-//        dbAccessObj.messageHandler(new NewMessage( "afshin", "reza", "hi reza", new Date()));
-//        dbAccessObj.messageHandler(new NewMessage( "matin", "reza", "hi reza", new Date()));
-        dbAccessObj.messageHandler(new NewMessage(1593905714, "reza", "matin", "hi matin", new Date()));
-//        dbAccessObj.messageHandler(new NewMessage(1593522667, "reza", "matin", "hi matin", new Date()));
+        DAO DAO = new DAOImpl();
+//        DAO.messageHandler(new NewMessage( "afshin", "reza", "hi reza", new Date()));
+//        DAO.messageHandler(new NewMessage( "matin", "reza", "hi reza", new Date()));
+        DAO.messageHandler(new NewMessage(1593905714, "reza", "matin", "hi matin", new Date()));
+//        DAO.messageHandler(new NewMessage(1593522667, "reza", "matin", "hi matin", new Date()));
     }
 
     public static void testWaitForClient() throws IOException {
@@ -59,8 +59,8 @@ public class Main {
     }
 
     public static void testGetAllUsersInfo() {
-        DbAccessObj dbAccessObj = new DAO();
-        System.out.println(dbAccessObj.getAllUsersInfo().toString());
+        DAO DAO = new DAOImpl();
+        System.out.println(DAO.getAllUsersInfo().toString());
     }
 
 

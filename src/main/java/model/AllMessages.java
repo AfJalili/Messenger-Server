@@ -1,8 +1,9 @@
 package model;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 
-public class AllMessages {
+public class AllMessages implements Serializable {
     private ArrayList<Message> allMessages;
 
     public ArrayList<Message> getAllMessages() {
@@ -15,5 +16,12 @@ public class AllMessages {
 
     public AllMessages(ArrayList<Message> allMessages) {
         this.allMessages = allMessages;
+    }
+
+    @Override
+    public String toString() {
+        return "AllMessages{" +
+                "allMessages=" + allMessages +
+                '}';
     }
 }

@@ -1,7 +1,6 @@
 package model;
 
 
-import java.awt.*;
 import java.io.Serializable;
 
 /**
@@ -13,7 +12,7 @@ public class NewAccount implements Serializable {
     private String AccountName;  //unique
     private String userName;
     private String password;
-    private Image profilePic = null;
+    private String profilePic = null;
 
     public NewAccount(String gender, String accountName, String userName, String password) {
         this.gender = gender;
@@ -22,7 +21,7 @@ public class NewAccount implements Serializable {
         this.password = password;
     }
 
-    public NewAccount(String gender, String accountName, String userName, String password, Image profilePic) {
+    public NewAccount(String gender, String accountName, String userName, String password, String profilePic) {
         this.gender = gender;
         AccountName = accountName;
         this.userName = userName;
@@ -62,11 +61,11 @@ public class NewAccount implements Serializable {
         this.password = password;
     }
 
-    public Image getProfilePic() {
+    public String getProfilePic() {
         return profilePic;
     }
 
-    public void setProfilePic(Image profilePic) {
+    public void setProfilePic(String profilePic) {
         this.profilePic = profilePic;
     }
 

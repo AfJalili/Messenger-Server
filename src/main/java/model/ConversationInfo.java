@@ -12,7 +12,7 @@ public class ConversationInfo implements Comparable<Date>, Serializable {
     public final String PRIVATE_CHAT = "pv";
 
     private long id;
-    private String type; // PRIVATE_CHAT / GROUP_CHAT
+    private String type; // pv / gp
     private Message lastMessage;
     private ArrayList<MemberInfo> members;
     private Date mongoDate;

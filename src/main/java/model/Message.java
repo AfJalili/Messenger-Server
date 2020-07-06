@@ -6,7 +6,7 @@ import java.util.Date;
 public class Message implements Serializable {
     private long conversationId;
     private String sender;
-    private String receiver;
+    private String receiver = "empty";
     private String content;
     private Date date;
     private boolean seen = false;
@@ -87,5 +87,18 @@ public class Message implements Serializable {
 
     public void setContainsFile(boolean containsFile) {
         this.containsFile = containsFile;
+    }
+
+    @Override
+    public String toString() {
+        return "Message{" +
+                "conversationId=" + conversationId +
+                ", sender='" + sender + '\'' +
+                ", receiver='" + receiver + '\'' +
+                ", content='" + content + '\'' +
+                ", date=" + date +
+                ", seen=" + seen +
+                ", containsFile=" + containsFile +
+                '}';
     }
 }
