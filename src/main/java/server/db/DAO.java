@@ -1,25 +1,27 @@
 package server.db;
 
 import com.mongodb.BasicDBObject;
+import com.mongodb.client.FindIterable;
 import com.mongodb.client.MongoCollection;
+import com.mongodb.client.model.Filters;
 import com.mongodb.client.model.Updates;
 import enums.UserStatus;
 import model.*;
 import org.bson.Document;
 
+import java.security.MessageDigest;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.function.Consumer;
 
-import static com.mongodb.client.model.Filters.eq;
-import static com.mongodb.client.model.Filters.regex;
+import static com.mongodb.client.model.Filters.*;
 import static org.bson.codecs.configuration.CodecRegistries.fromProviders;
 import static org.bson.codecs.configuration.CodecRegistries.fromRegistries;
 
 public class DAO implements DbAccessObj {
 
-
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     @Override
     public Boolean createNewAccount(NewAccount newAccount) {
         //  check availability of accountName
@@ -50,7 +52,7 @@ public class DAO implements DbAccessObj {
     }
 
 
-
+    // TODO profile pic problem
     protected Account fillAccountObj(NewAccount newAccount) {
         return new Account(newAccount.getGender(), newAccount.getAccountName(), newAccount.getUserName(),
                 newAccount.getPassword(), newAccount.getProfilePic());
@@ -66,11 +68,11 @@ public class DAO implements DbAccessObj {
     public Boolean messageHandler(NewMessage newMessage) {
         if (newMessage.getConversationId() == 0) {
             // TODO if not: create conversation and add it to user account info
-            return createNewConversation(newMessage);
+            return createNewPvConversation(newMessage);
         }
-        // TODO if chat Id exists: update conversation info
+        // TODO must change, no need for message content
         updateConversationInfo(newMessage.getConversationId(), newMessage.getDate(), newMessage.getContent());
-        // TODO save the message
+        //save the message
         Message m = fillMessageObj(newMessage);
         saveMessage(m);
         // TODO notify receiver(s)
@@ -83,7 +85,7 @@ public class DAO implements DbAccessObj {
         //  check logins in accounts
         if (!searchAccountsCollForLogin(loginData)) { return false; }
         changeUserStatusTo(loginData.getAccountName(), UserStatus.ONLINE);
-        return null;
+        return true;
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -101,7 +103,7 @@ public class DAO implements DbAccessObj {
         //TODO implement listener
         return null;
     }
-
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     @Override
     public ArrayList<Object> getConversationInfo(String accName) {
         ArrayList<Object> result = new ArrayList<>();
@@ -109,6 +111,91 @@ public class DAO implements DbAccessObj {
         // TODO get group info
         return result;
     }
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    @Override
+    public UserInfo getUserInfo(String accName) {
+        ArrayList<ConversationInfo> conInfos = new ArrayList<>(getConversationInfos(accName));
+        // TODO get contacts
+        Account ac = DBStuff.accountsColByObj.find(eq("accountName", accName)).first();
+        if (ac != null) {
+            UserInfo result = new UserInfo(ac.getGender(), ac.getAccountName(), ac.getUserName(), conInfos);
+            return result;
+        }
+        System.out.println("returning null in UserInfo");
+        return null;
+    }
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    @Override
+    public NewMessage newMessageListener(String accName) {
+        ArrayList<Long> conIds = getConversationIdList(accName);
+        for (Long id : conIds) {
+            BasicDBObject newDocument = new BasicDBObject(); newDocument.put("seen", true);
+            BasicDBObject updateObject = new BasicDBObject(); updateObject.put("$set", newDocument);
+            Message m = DBStuff.messageCol.findOneAndUpdate(Filters.and(eq("conversationId", id),
+                    eq("seen", false), Filters.not(eq("sender", accName))), updateObject);
+            if (m != null) {
+                return fillNewMessageObj(m);
+            }
+        }
+        return null;
+    }
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    @Override
+    public AllMessages getAllMessagesOfConversation(RequestConversation rc) {
+        FindIterable<Message> messages = DBStuff.messageCol.find(eq("conversationId", rc.id));
+        ArrayList<Message> m = new ArrayList<>();
+        for (Message message: messages) {
+            m.add(message);
+        }
+        return new AllMessages(m);
+    }
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    @Override
+    public MemberInfo searchAccName(String accName) {
+        MemberInfo result = DBStuff.accColByMemberInfo.find(eq("accountName", accName)).first();
+        if (result == null) {
+            return new MemberInfo(null, "null", null, null);
+        }
+        return result;
+    }
+
+    protected NewMessage fillNewMessageObj(Message m) {
+        return new NewMessage(m.getConversationId(), m.getSender(), m.getReceiver(), m.getContent(),m.isContainsFile(), m.getDate());
+    }
+
+    protected ArrayList<ConversationInfo> getConversationInfos(String accName) {
+        ArrayList<Long> conIds = new ArrayList<>(getConversationIdList(accName));
+//        if (conIds.size() == 0) { return null; }
+        ArrayList<ConversationInfo> result = new ArrayList<>();
+        for (Long id : conIds) {
+            PrivateChat pvc = DBStuff.pvChatCol.find(eq("chatId", id)).first();
+            if (pvc != null) {
+                // creating an arraylist of members accountName
+                ArrayList<String> memberlist = new ArrayList<>();
+                memberlist.add(pvc.getMember1()); memberlist.add(pvc.getMember2());
+
+                result.add(new ConversationInfo(id, "pv", findLastMessage(id, pvc.getLastMessageDate()),
+                       getMembersInfo(memberlist), pvc.getLastMessageDate()));
+            }
+        }
+        return result;
+    }
+
+    protected ArrayList<MemberInfo> getMembersInfo(ArrayList<String> membersAccName) {
+        ArrayList<MemberInfo> result = new ArrayList<>();
+        for (String accName : membersAccName) {
+            MemberInfo mi = DBStuff.accColByMemberInfo.find(eq("accountName", accName)).first();
+            if (mi != null) { result.add(mi); }
+        }
+        return result;
+    }
+    protected Message findLastMessage(Long conversationId, Date lastMessageDate) {
+        // TODO Im not sure about line below
+        Message message = DBStuff.messageCol.find(Filters.and(eq("conversationId", conversationId), eq("date", lastMessageDate))).first();
+        return message;
+    }
+
 
     protected ArrayList<Long> getConversationIdList(String accName) {
         Document doc = DBStuff.accountsCol.find(eq("accountName", accName)).first();
@@ -133,7 +220,7 @@ public class DAO implements DbAccessObj {
         DBStuff.pvChatCol.updateOne(eq("chatId", conversationId), newInfo);
     }
 
-    protected boolean createNewConversation(NewMessage firstMessage) {
+    protected boolean createNewPvConversation(NewMessage firstMessage) {
         PrivateChat pvChatInfo = new PrivateChat(getId(), firstMessage.getSenderAccName(),
                 firstMessage.getReceiverAccName(), firstMessage.getDate(), firstMessage.getContent());
         saveConversationInfo(pvChatInfo);
@@ -142,7 +229,6 @@ public class DAO implements DbAccessObj {
         addConversationIdToUserAccount(pvChatInfo.getChatId(), pvChatInfo.getMember2());
         Message m = fillMessageObj(firstMessage);
         saveMessage(m);
-        // TODO notify receiver(s)
         return true;
     }
     // TODO this implementation must change
@@ -158,7 +244,7 @@ public class DAO implements DbAccessObj {
 
     protected Message fillMessageObj(NewMessage nM) {
         return new Message(nM.getConversationId(), nM.getSenderAccName(),
-                nM.getReceiverAccName(), nM.getContent(), nM.getDate());
+                nM.getReceiverAccName(), nM.getContent(), nM.getDate(),false, nM.isContainsFile());
     }
 
     protected void saveMessage(Message message) {
@@ -178,7 +264,11 @@ public class DAO implements DbAccessObj {
     }
 
     public synchronized long getId() {
-        //TODO for #matin
+        try {
+            Thread.sleep(1500);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
         return new Date().getTime() / 1000;
     }
 }

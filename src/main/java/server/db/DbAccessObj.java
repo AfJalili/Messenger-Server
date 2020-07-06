@@ -1,10 +1,8 @@
 package server.db;
 
-import model.AccNameAndProfilePic;
-import model.LoginData;
-import model.NewAccount;
-import model.NewMessage;
+import model.*;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 
 public interface DbAccessObj {
@@ -21,5 +19,14 @@ public interface DbAccessObj {
     ArrayList<NewMessage> newMessageNotifier(String accName);
 
     ArrayList<Object> getConversationInfo(String accName);
+
+    UserInfo getUserInfo(String accName);
+
+
+    NewMessage newMessageListener(String accName);
+
+    AllMessages getAllMessagesOfConversation(RequestConversation rc);
+
+    MemberInfo searchAccName(String accName);
 
 }

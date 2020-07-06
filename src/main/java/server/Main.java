@@ -17,10 +17,9 @@ public class Main {
 //        testCreateNewAccount();
 //        testCheckLogin();
 //        testMessageHandler();
-//        testWaitForClient();
 //        testGetAllUsersInfo();
-        String str = "1W: afshin";
-        System.out.println(str.substring(4, str.length()-1));
+        testWaitForClient();
+
     }
 
     public static void testCreateNewAccount() {

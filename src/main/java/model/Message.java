@@ -1,21 +1,33 @@
 package model;
 
+import java.io.Serializable;
 import java.util.Date;
 
-public class Message {
+public class Message implements Serializable {
     private long conversationId;
     private String sender;
     private String receiver;
     private String content;
     private Date date;
-
     private boolean seen = false;
+    private boolean containsFile;
+
     public Message(long conversationId, String sender, String receiver, String content, Date date) {
         this.conversationId = conversationId;
         this.sender = sender;
         this.receiver = receiver;
         this.content = content;
         this.date = date;
+    }
+
+    public Message(long conversationId, String sender, String receiver, String content, Date date, boolean seen, boolean containsFile) {
+        this.conversationId = conversationId;
+        this.sender = sender;
+        this.receiver = receiver;
+        this.content = content;
+        this.date = date;
+        this.seen = seen;
+        this.containsFile = containsFile;
     }
 
     public Message() {
@@ -67,5 +79,13 @@ public class Message {
 
     public void setSeen(boolean seen) {
         this.seen = seen;
+    }
+
+    public boolean isContainsFile() {
+        return containsFile;
+    }
+
+    public void setContainsFile(boolean containsFile) {
+        this.containsFile = containsFile;
     }
 }

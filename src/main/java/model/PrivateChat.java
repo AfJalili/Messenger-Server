@@ -3,12 +3,15 @@ package model;
 import java.io.Serializable;
 import java.util.Date;
 
-public class PrivateChat implements Serializable {
+public class PrivateChat {
     private long chatId;  // using system nano time to create Id
     private String member1; // account name
     private String member2; // account name
     private Date lastMessageDate;
     private String lastMessageContent;
+
+    public PrivateChat() {
+    }
 
     public PrivateChat(long chatId, String member1, String member2, Date lastMessageDate, String lastMessageContent) {
         this.chatId = chatId;
@@ -16,9 +19,6 @@ public class PrivateChat implements Serializable {
         this.member2 = member2;
         this.lastMessageDate = lastMessageDate;
         this.lastMessageContent = lastMessageContent;
-    }
-
-    public PrivateChat(long time, String senderAccName, String receiverAccName, String date, String content) {
     }
 
     public long getChatId() {
@@ -60,4 +60,6 @@ public class PrivateChat implements Serializable {
     public void setLastMessageContent(String lastMessageContent) {
         this.lastMessageContent = lastMessageContent;
     }
+
+
 }

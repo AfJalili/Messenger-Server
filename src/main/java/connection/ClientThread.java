@@ -46,7 +46,7 @@ public class ClientThread implements Runnable {
                 }
             }
         } catch (IOException | ClassNotFoundException e) {
-//                e.printStackTrace();
+                e.printStackTrace();
             e.getMessage();
             System.out.println("socket exception");
         }
@@ -57,7 +57,7 @@ public class ClientThread implements Runnable {
 
 
     void doService(Object inputObject) throws IOException {
-        // todo call database method and get response object
+        // call database method and get response object
         Object outObj = null;
         if (inputObject instanceof NewAccount) {
             NewAccount na = (NewAccount) inputObject;
@@ -68,20 +68,32 @@ public class ClientThread implements Runnable {
 
         } else if (inputObject instanceof NewMessage) {
             outObj = dbAccessObj.messageHandler((NewMessage) inputObject);
+
         } else if (inputObject instanceof LoginData) {
             LoginData ld = (LoginData) inputObject;
             if (dbAccessObj.checkLogin((LoginData) inputObject)) {
                 this.onlineUserAccName = ld.getAccountName();
                 outObj = true;
             } else { outObj = false; }
+
         } else if (inputObject.toString().contains("1W: ")) {
             String str = inputObject.toString();
-            this.onlineUserAccName = str.substring(4, str.length());
-            // TODO go to listener mode
+            this.onlineUserAccName = str.substring(4);
+            listenerMode(onlineUserAccName);
+
+        } else if (inputObject.toString().equals("setting up user profile view")) {
+            outObj = dbAccessObj.getUserInfo(onlineUserAccName);
+
+        } else if (inputObject.toString().contains("search: ")) {
+            // TODO Search fo accountName
+            System.out.println("calling search");
+            outObj = dbAccessObj.searchAccName(inputObject.toString().substring(8));
         }
-        if (outObj != null)
-        oOStream.writeObject(outObj);
-        oOStream.flush();
+
+        if (outObj != null) {
+            oOStream.writeObject(outObj);
+            oOStream.flush();
+        }
 //        sendDataToClient(outObj); // TODO this method does not work, it throws exception
         System.out.println(Objects.requireNonNull(outObj).toString());
 
@@ -100,8 +112,20 @@ public class ClientThread implements Runnable {
 
     }
 
-    void listener(String accName) {
-
+    void listenerMode(String accName) {
+        while (true) {
+            NewMessage nM = dbAccessObj.newMessageListener(accName);
+            if (nM != null) {
+                try {
+                    oOStream.writeObject(nM);
+                    oOStream.flush();
+                    nM = null;
+                } catch (IOException e) {
+                    e.printStackTrace();
+                    System.out.println(e.getMessage() + " error sending new Message to client");
+                }
+            }
+        }
     }
 
 
