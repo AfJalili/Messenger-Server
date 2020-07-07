@@ -7,7 +7,6 @@ import java.util.ArrayList;
 
 public interface DAO {
 
-
     Boolean createNewAccount(NewAccount newAccount);
 
     Boolean checkLogin(LoginData loginData);

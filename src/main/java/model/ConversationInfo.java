@@ -7,7 +7,7 @@ import java.util.Date;
 /**
  * data transfer
  */
-public class ConversationInfo implements Comparable<Date>, Serializable {
+public class ConversationInfo implements Comparable<ConversationInfo>, Serializable {
     public final String GROUP_CHAT = "gp";
     public final String PRIVATE_CHAT = "pv";
 
@@ -113,10 +113,6 @@ public class ConversationInfo implements Comparable<Date>, Serializable {
         this.conversationName = conversationName;
     }
 
-    @Override
-    public int compareTo(Date o) {
-        return this.mongoDate.compareTo(o);
-    }
 
     @Override
     public String toString() {
@@ -131,5 +127,10 @@ public class ConversationInfo implements Comparable<Date>, Serializable {
                 ", conversationPic='" + conversationPic + '\'' +
                 ", conversationName='" + conversationName + '\'' +
                 '}';
+    }
+
+    @Override
+    public int compareTo(ConversationInfo o) {
+        return this.mongoDate.compareTo(o.mongoDate);
     }
 }

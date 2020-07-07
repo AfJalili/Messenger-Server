@@ -19,7 +19,7 @@ public class Client_1 {
 
         System.out.println(15);
 //        oos.writeObject(new LoginData("matin", "pass"));
-//        oos.writeObject(new NewAccount("male", "afshin", "Afshin Jalili","pass"));
+        oos.writeObject(new NewAccount("female", "ali", "Ali Jalili","pass"));
 //        oos.writeObject(new NewAccount("male", "matin", "Matin Vahedi","pass"));
 //        oos.writeObject(new NewAccount("male", "reza", "Reza Fathi","pass"));
 //        oos.writeObject(new NewMessage( "reza", "afshin", "hello there", new Date(), false));
@@ -29,7 +29,7 @@ public class Client_1 {
 //        oos.writeObject(new NewMessage( 1594066868, "reza", "matin", "hi",false, new Date()));
 //        oos.writeObject(new NewMessage( 1594066869,"afshin", "matin", "hi",false, new Date()));
 
-//        oos.writeObject("setting up user profile view");
+        oos.writeObject("setting up user profile view");
 //        oos.writeObject("search: reza");
 //        oos.writeObject("search: yasin");
         oos.flush();
@@ -40,11 +40,11 @@ public class Client_1 {
 
 
         while (true) {
-            Scanner scanner = new Scanner(System.in);
-            String str = scanner.nextLine();
-            oos.writeObject(new NewMessage( 1594066869,"afshin", str,false, new Date()));
-            oos.writeObject(new RequestConversation(1594066869));
-            oos.flush();
+//            Scanner scanner = new Scanner(System.in);
+//            String str = scanner.nextLine();
+//            oos.writeObject(new NewMessage( 1594066869,"afshin", str,false, new Date()));
+//            oos.writeObject(new RequestConversation(1594066869));
+//            oos.flush();
             if (bis.available() > 0) {
                 System.out.println(ois.readObject().toString());
             }

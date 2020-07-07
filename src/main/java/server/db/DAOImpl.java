@@ -5,18 +5,12 @@ import com.mongodb.client.FindIterable;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.model.Filters;
 import com.mongodb.client.model.Updates;
-import enums.UserStatus;
 import model.*;
 import org.bson.Document;
-
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 import java.util.function.Consumer;
-
 import static com.mongodb.client.model.Filters.*;
-import static org.bson.codecs.configuration.CodecRegistries.fromProviders;
-import static org.bson.codecs.configuration.CodecRegistries.fromRegistries;
+
 
 public class DAOImpl implements DAO {
 
@@ -83,7 +77,7 @@ public class DAOImpl implements DAO {
     public Boolean checkLogin(LoginData loginData) {
         //  check logins in accounts
         if (!searchAccountsCollForLogin(loginData)) { return false; }
-        changeUserStatusTo(loginData.getAccountName(), UserStatus.ONLINE);
+        changeUserStatusTo(loginData.getAccountName(), "ONLINE");
         return true;
     }
 
@@ -105,6 +99,7 @@ public class DAOImpl implements DAO {
         // TODO get group info
         return result;
     }
+
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     @Override
     public UserInfo getUserInfo(String accName) {
@@ -112,12 +107,12 @@ public class DAOImpl implements DAO {
         // TODO get contacts
         Account ac = MongoDBProperty.accountsColByObj.find(eq("accountName", accName)).first();
         if (ac != null) {
-            UserInfo result = new UserInfo(ac.getGender(), ac.getAccountName(), ac.getUserName(), conInfos);
-            return result;
+            return new UserInfo(ac.getGender(), ac.getAccountName(), ac.getUserName(), conInfos);
         }
         System.out.println("returning null in UserInfo");
         return null;
     }
+
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     @Override
     public NewMessage newMessageListener(String accName) {
@@ -133,6 +128,7 @@ public class DAOImpl implements DAO {
         }
         return null;
     }
+
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     @Override
     public AllMessages getAllMessagesOfConversation(RequestConversation rc) {
@@ -149,7 +145,7 @@ public class DAOImpl implements DAO {
     public MemberInfo searchAccName(String accName) {
         MemberInfo result = MongoDBProperty.accColByMemberInfo.find(eq("accountName", accName)).first();
         if (result == null) {
-            return new MemberInfo(null, "null", null, null);
+            return new MemberInfo(null, null, null, null);
         }
         return result;
     }
@@ -160,19 +156,20 @@ public class DAOImpl implements DAO {
 
     protected ArrayList<ConversationInfo> getConversationInfos(String accName) {
         ArrayList<Long> conIds = new ArrayList<>(getConversationIdList(accName));
-//        if (conIds.size() == 0) { return null; }
         ArrayList<ConversationInfo> result = new ArrayList<>();
         for (Long id : conIds) {
             PrivateChat pvc = MongoDBProperty.pvChatCol.find(eq("chatId", id)).first();
             if (pvc != null) {
                 // creating an arraylist of members accountName
-                ArrayList<String> memberlist = new ArrayList<>();
-                memberlist.add(pvc.getMember1()); memberlist.add(pvc.getMember2());
+                ArrayList<String> members = new ArrayList<>();
+                members.add(pvc.getMember1()); members.add(pvc.getMember2());
 
                 result.add(new ConversationInfo(id, "pv", findLastMessage(id, pvc.getLastMessageDate()),
-                       getMembersInfo(memberlist), pvc.getLastMessageDate()));
+                       getMembersInfo(members), pvc.getLastMessageDate()));
             }
         }
+        Collections.sort(result);
+
         return result;
     }
 
@@ -184,17 +181,21 @@ public class DAOImpl implements DAO {
         }
         return result;
     }
+
     protected Message findLastMessage(Long conversationId, Date lastMessageDate) {
-        // TODO Im not sure about line below
         Message message = MongoDBProperty.messageCol.find(Filters.and(eq("conversationId", conversationId), eq("date", lastMessageDate))).first();
+        if (message == null) {
+            System.out.println("lastMessageNotFound");
+            return null;
+        }
         return message;
     }
-
 
     protected ArrayList<Long> getConversationIdList(String accName) {
         Document doc = MongoDBProperty.accountsCol.find(eq("accountName", accName)).first();
         return (ArrayList<Long>) doc.get("conversationIds");
     }
+
     protected ArrayList<PrivateChat> getPvChatInfo(String accName) {
         ArrayList<PrivateChat> result = new ArrayList<>();
         ArrayList<Long> conIds = getConversationIdList(accName);
@@ -225,6 +226,7 @@ public class DAOImpl implements DAO {
         saveMessage(m);
         return true;
     }
+
     // TODO this implementation must change
     protected void saveConversationInfo(Object conInfo) {
         MongoDBProperty.pvChatCol.insertOne((PrivateChat) conInfo);
@@ -251,9 +253,10 @@ public class DAOImpl implements DAO {
     }
 
 
-    protected void changeUserStatusTo(String accountName, UserStatus status) { // ONLINE or OFFLINE
-        // TODO for #Matin
-        // TODO go to accounts collection, find account using accountName and change status field
+    protected void changeUserStatusTo(String accountName, String status) { // ONLINE or OFFLINE
+            Document doc = new Document(); doc.put("status", status);
+            BasicDBObject update = new BasicDBObject(); update.put("$set", doc);
+            MongoDBProperty.accountsCol.updateOne(eq("accountName", accountName), update);
 
     }
 

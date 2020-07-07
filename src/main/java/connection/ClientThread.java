@@ -6,7 +6,6 @@ import model.NewMessage;
 import model.RequestConversation;
 import server.db.DAO;
 import server.db.DAOImpl;
-
 import java.io.*;
 import java.net.Socket;
 import java.util.Objects;
@@ -14,49 +13,41 @@ import java.util.Objects;
 public class ClientThread implements Runnable {
     String onlineUserAccName;
     Socket clientSocket;
-    public ObjectInputStream oIStream;
-    public ObjectOutputStream oOStream;
+    ObjectInputStream oIStream;
+    ObjectOutputStream oOStream;
     Object inputObject;
     DAO DAO = new DAOImpl();
 
     public ClientThread(Socket clientSocket) {
         this.clientSocket = clientSocket;
-        // TODO
     }
 
     @Override
     public void run() {
-
         BufferedInputStream bIS;
         BufferedOutputStream bOS;
         try {
             bOS = new BufferedOutputStream(clientSocket.getOutputStream());
             bIS = new BufferedInputStream(clientSocket.getInputStream());
             oOStream = new ObjectOutputStream(bOS);
-            System.out.println("flushed");
             oOStream.flush();
             oIStream = new ObjectInputStream(bIS);
 
             while (clientSocket.isConnected()) {
                 if (bIS.available() > 0) {
                     inputObject = oIStream.readObject();
-                }
-                if (inputObject != null) {
-                    System.out.println(inputObject.toString());
                     doService(inputObject);
+                    System.out.println(inputObject.toString());
                     inputObject = null;
                 }
             }
         } catch (IOException | ClassNotFoundException e) {
             e.printStackTrace();
-            e.getMessage();
-            System.out.println("socket exception");
+            System.out.println("socket exception" + e.getMessage());
         }
 
-        // todo if connection get closed a method must save its user last activity
+        // todo if connection got closed a method must save its user last activity
     }
-
-
 
     void doService(Object inputObject) throws IOException {
         // call database method and get response object
@@ -123,6 +114,4 @@ public class ClientThread implements Runnable {
             }
         }
     }
-
-
 }
