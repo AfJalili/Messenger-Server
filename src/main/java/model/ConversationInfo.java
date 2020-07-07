@@ -16,7 +16,7 @@ public class ConversationInfo implements Comparable<ConversationInfo>, Serializa
     private Message lastMessage;
     private ArrayList<MemberInfo> members;
     private Date mongoDate;
-    private String conversationPic = null;
+    private String conversationPic = "";
     private String conversationName = "";
 
 

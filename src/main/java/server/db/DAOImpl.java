@@ -7,6 +7,8 @@ import com.mongodb.client.model.Filters;
 import com.mongodb.client.model.Updates;
 import model.*;
 import org.bson.Document;
+
+import java.io.Serializable;
 import java.util.*;
 import java.util.function.Consumer;
 import static com.mongodb.client.model.Filters.*;
@@ -23,7 +25,7 @@ public class DAOImpl implements DAO {
         Account account = fillAccountObj(newAccount);
         //  add info to AccountsColl
         saveAccount(account);
-        // TODO create contact list and conversation list
+        // Tcreate contact list and conversation list
         createFieldInAccountDoc( "list", "contacts", newAccount.getAccountName());
         createFieldInAccountDoc( "list", "conversationIds", newAccount.getAccountName());
 
@@ -31,9 +33,12 @@ public class DAOImpl implements DAO {
     }
 
     protected void createFieldInAccountDoc(String type, String fieldName, String accName) {
+        BasicDBObject findQuery = new BasicDBObject("accountName", accName);
         if (type.equals("list")) {
             List<Long> list = new ArrayList<>();
-            MongoDBProperty.accountsCol.findOneAndUpdate(eq("accountName", accName), Updates.pushEach(fieldName, list));
+            MongoDBProperty.accountsCol.findOneAndUpdate(findQuery, Updates.pushEach(fieldName, list));
+        } else if (type.equalsIgnoreCase("string")) {
+            MongoDBProperty.accountsCol.findOneAndUpdate(findQuery, Updates.set(fieldName, ""));
         }
 
     }
@@ -44,21 +49,18 @@ public class DAOImpl implements DAO {
 
     }
 
-
-    // TODO profile pic problem
     protected Account fillAccountObj(NewAccount newAccount) {
         return new Account(newAccount.getGender(), newAccount.getAccountName(), newAccount.getUserName(),
                 newAccount.getPassword(), newAccount.getProfilePic());
     }
 
     protected void saveAccount(Account account) {
-        MongoCollection<Account> accCollObj = MongoDBProperty.messengerDb.getCollection("accounts", Account.class);
         MongoDBProperty.accountsColByObj.insertOne(account);
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     @Override
-    public Boolean messageHandler(NewMessage newMessage) {
+    public Serializable messageHandler(NewMessage newMessage) {
         if (newMessage.getConversationId() == 0) {
             // TODO if not: create conversation and add it to user account info
             return createNewPvConversation(newMessage);
@@ -107,7 +109,7 @@ public class DAOImpl implements DAO {
         // TODO get contacts
         Account ac = MongoDBProperty.accountsColByObj.find(eq("accountName", accName)).first();
         if (ac != null) {
-            return new UserInfo(ac.getGender(), ac.getAccountName(), ac.getUserName(), conInfos);
+            return new UserInfo(ac.getGender(), ac.getAccountName(), ac.getUserName(),ac.getProfilePic(), conInfos);
         }
         System.out.println("returning null in UserInfo");
         return null;
@@ -142,16 +144,32 @@ public class DAOImpl implements DAO {
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     @Override
-    public MemberInfo searchAccName(String accName) {
-        MemberInfo result = MongoDBProperty.accColByMemberInfo.find(eq("accountName", accName)).first();
-        if (result == null) {
-            return new MemberInfo(null, null, null, null);
+    public SearchResult searchAccName(String searchExpr) {
+        FindIterable<MemberInfo> it = MongoDBProperty.accColByMemberInfo.find(Filters.regex("accountName", searchExpr));
+        ArrayList<MemberInfo> members = new ArrayList<>();
+        for (MemberInfo mi : it) {
+            members.add(mi);
         }
-        return result;
+        return new SearchResult(members);
+    }
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    @Override
+    public Boolean addAccProfilePic(String aacName, String img) {
+        createFieldInAccountDoc("String", "profilePic", aacName);
+        MongoDBProperty.accountsCol.updateOne(eq("accountName", aacName), Updates.set("profilePic", img));
+        return true;
+    }
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    @Override
+    public Boolean changeAccProfilePic(String aacName, String img) {
+        MongoDBProperty.accountsCol.updateOne(eq("accountName", aacName), Updates.set("profilePic", img));
+        return true;
     }
 
     protected NewMessage fillNewMessageObj(Message m) {
-        return new NewMessage(m.getConversationId(), m.getSender(), m.getReceiver(), m.getContent(),m.isContainsFile(), m.getDate());
+        return new NewMessage(m.getConversationId(), m.getSender(), m.getReceiver(), m.getContent(),m.containsFile(), m.getDate());
     }
 
     protected ArrayList<ConversationInfo> getConversationInfos(String accName) {
@@ -174,6 +192,15 @@ public class DAOImpl implements DAO {
     }
 
     protected ArrayList<MemberInfo> getMembersInfo(ArrayList<String> membersAccName) {
+        ArrayList<MemberInfo> result = new ArrayList<>();
+        for (String accName : membersAccName) {
+            MemberInfo mi = MongoDBProperty.accColByMemberInfo.find(eq("accountName", accName)).first();
+            if (mi != null) { result.add(mi); }
+        }
+        return result;
+    }
+
+    protected ArrayList<MemberInfo> getMembersInfo(String... membersAccName) {
         ArrayList<MemberInfo> result = new ArrayList<>();
         for (String accName : membersAccName) {
             MemberInfo mi = MongoDBProperty.accColByMemberInfo.find(eq("accountName", accName)).first();
@@ -215,7 +242,7 @@ public class DAOImpl implements DAO {
         MongoDBProperty.pvChatCol.updateOne(eq("chatId", conversationId), newInfo);
     }
 
-    protected boolean createNewPvConversation(NewMessage firstMessage) {
+    protected ConversationInfo createNewPvConversation(NewMessage firstMessage) {
         PrivateChat pvChatInfo = new PrivateChat(getId(), firstMessage.getSenderAccName(),
                 firstMessage.getReceiverAccName(), firstMessage.getDate(), firstMessage.getContent());
         saveConversationInfo(pvChatInfo);
@@ -224,7 +251,10 @@ public class DAOImpl implements DAO {
         addConversationIdToUserAccount(pvChatInfo.getChatId(), pvChatInfo.getMember2());
         Message m = fillMessageObj(firstMessage);
         saveMessage(m);
-        return true;
+
+        return new ConversationInfo(pvChatInfo.getChatId(), "pv", m,
+                   getMembersInfo(pvChatInfo.getMember1(), pvChatInfo.getMember2()),
+                   pvChatInfo.getLastMessageDate());
     }
 
     // TODO this implementation must change

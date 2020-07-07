@@ -8,7 +8,7 @@ public class Account { // user info
     private String AccountName;  //unique
     private String userName;
     private String password;
-    private String profilePic = null;
+    private String profilePic;
     private String status = "ONLINE";
 
 

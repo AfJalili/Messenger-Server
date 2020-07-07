@@ -19,7 +19,7 @@ public class Client_1 {
 
         System.out.println(15);
 //        oos.writeObject(new LoginData("matin", "pass"));
-        oos.writeObject(new NewAccount("female", "ali", "Ali Jalili","pass"));
+        oos.writeObject(new NewAccount("female", "parsazzzz", "Ali Jalili","pass","556776878"));
 //        oos.writeObject(new NewAccount("male", "matin", "Matin Vahedi","pass"));
 //        oos.writeObject(new NewAccount("male", "reza", "Reza Fathi","pass"));
 //        oos.writeObject(new NewMessage( "reza", "afshin", "hello there", new Date(), false));

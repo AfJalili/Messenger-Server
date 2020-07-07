@@ -8,7 +8,7 @@ import java.io.Serializable;
 public class MemberInfo implements Serializable {
     private String AccountName;
     private String UserName;
-    private String profilePic = null;
+    private String profilePic;
     private String gender;
 
     public MemberInfo(String accountName, String userName, String profilePic) {

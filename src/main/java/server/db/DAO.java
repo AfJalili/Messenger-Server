@@ -11,7 +11,7 @@ public interface DAO {
 
     Boolean checkLogin(LoginData loginData);
 
-    Boolean messageHandler(NewMessage newMessage);
+    Serializable messageHandler(NewMessage newMessage);
 
      ArrayList<AccNameAndProfilePic> getAllUsersInfo();
 
@@ -23,6 +23,10 @@ public interface DAO {
 
     AllMessages getAllMessagesOfConversation(RequestConversation rc);
 
-    MemberInfo searchAccName(String accName);
+    SearchResult searchAccName(String searchExpr);
+
+    Boolean addAccProfilePic(String aacName, String img);
+
+    Boolean changeAccProfilePic(String aacName, String img);
 
 }

@@ -10,9 +10,17 @@ public class UserInfo implements Serializable {
     private String gender;
     private String AccountName;  //unique
     private String userName;
-    private String profilePic = null;
+    private String profilePic = "";
     private ArrayList<String> contactsAccName;
     private ArrayList<ConversationInfo> conversations;
+
+    public UserInfo(String gender, String accountName, String userName, String profilePic, ArrayList<ConversationInfo> conversations) {
+        this.gender = gender;
+        AccountName = accountName;
+        this.userName = userName;
+        this.profilePic = profilePic;
+        this.conversations = conversations;
+    }
 
     public UserInfo(String gender, String accountName, String userName, String profilePic, ArrayList<String> contactsAccName, ArrayList<ConversationInfo> conversations) {
         this.gender = gender;

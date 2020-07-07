@@ -12,7 +12,7 @@ public class NewAccount implements Serializable {
     private String AccountName;  //unique
     private String userName;
     private String password;
-    private String profilePic = null;
+    private String profilePic = "";
 
     public NewAccount(String gender, String accountName, String userName, String password) {
         this.gender = gender;
