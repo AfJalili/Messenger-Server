@@ -16,6 +16,8 @@ public class ClientThread implements Runnable {
     ObjectInputStream oIStream;
     ObjectOutputStream oOStream;
     Object inputObject;
+    BufferedInputStream bIS;
+    BufferedOutputStream bOS;
     DAO DAO = new DAOImpl();
 
     public ClientThread(Socket clientSocket) {
@@ -24,8 +26,6 @@ public class ClientThread implements Runnable {
 
     @Override
     public void run() {
-        BufferedInputStream bIS;
-        BufferedOutputStream bOS;
         try {
             bOS = new BufferedOutputStream(clientSocket.getOutputStream());
             bIS = new BufferedInputStream(clientSocket.getInputStream());
@@ -41,6 +41,7 @@ public class ClientThread implements Runnable {
                     inputObject = null;
                 }
             }
+            System.out.println("connection is closed!!!");
         } catch (IOException | ClassNotFoundException e) {
             e.printStackTrace();
             System.out.println("socket exception" + e.getMessage());
@@ -107,6 +108,7 @@ public class ClientThread implements Runnable {
                     oOStream.writeObject(nM);
                     oOStream.flush();
                     nM = null;
+                    if (bIS.available() > 0) break;
                 } catch (IOException e) {
                     e.printStackTrace();
                     System.out.println(e.getMessage() + " error sending new Message to client");

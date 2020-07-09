@@ -169,7 +169,7 @@ public class DAOImpl implements DAO {
     }
 
     protected NewMessage fillNewMessageObj(Message m) {
-        return new NewMessage(m.getConversationId(), m.getSender(), m.getReceiver(), m.getContent(),m.containsFile(), m.getDate());
+        return new NewMessage(m.getConversationId(), m.getSender(), m.getReceiver(), m.getContent(),m.isContainsFile(), m.getDate());
     }
 
     protected ArrayList<ConversationInfo> getConversationInfos(String accName) {
@@ -274,14 +274,15 @@ public class DAOImpl implements DAO {
     }
 
     protected void saveMessage(Message message) {
-        MongoDBProperty.messageCol.insertOne(message);
+        if (message.getContent() != null && !message.getContent().equals("")) {
+           MongoDBProperty.messageCol.insertOne(message);
+        }
     }
 
     protected boolean searchAccountsCollForLogin(LoginData loginData) {
         LoginData ld = MongoDBProperty.accColByLoginData.find(eq("accountName", loginData.getAccountName())).first();
         return (ld != null) && (ld.getPassword().contentEquals(loginData.getPassword()));
     }
-
 
     protected void changeUserStatusTo(String accountName, String status) { // ONLINE or OFFLINE
             Document doc = new Document(); doc.put("status", status);

@@ -22,14 +22,14 @@ public class Client_1 {
         oos.writeObject(new NewAccount("female", "parsazzzz", "Ali Jalili","pass","556776878"));
 //        oos.writeObject(new NewAccount("male", "matin", "Matin Vahedi","pass"));
 //        oos.writeObject(new NewAccount("male", "reza", "Reza Fathi","pass"));
-//        oos.writeObject(new NewMessage( "reza", "afshin", "hello there", new Date(), false));
+        oos.writeObject(new NewMessage( "reza", "afshin", "hello there", new Date(), false));
 //        oos.writeObject(new NewMessage( "reza", "matin", "hello there",new Date(), false));
 //        oos.writeObject(new NewMessage( "afshin", "matin", "hello there",new Date(), false));
 //        oos.writeObject(new NewMessage( 1594066866,"reza", "afshin", "hi", false, new Date()));
 //        oos.writeObject(new NewMessage( 1594066868, "reza", "matin", "hi",false, new Date()));
 //        oos.writeObject(new NewMessage( 1594066869,"afshin", "matin", "hi",false, new Date()));
 
-        oos.writeObject("setting up user profile view");
+        oos.writeObject("search: fdgdgdgdgdg");
 //        oos.writeObject("search: reza");
 //        oos.writeObject("search: yasin");
         oos.flush();

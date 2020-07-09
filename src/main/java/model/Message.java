@@ -81,7 +81,7 @@ public class Message implements Serializable {
         this.seen = seen;
     }
 
-    public boolean containsFile() {
+    public boolean isContainsFile() {
         return containsFile;
     }
 
