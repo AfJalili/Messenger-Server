@@ -36,8 +36,8 @@ public class ClientThread implements Runnable {
             while (clientSocket.isConnected()) {
                 if (bIS.available() > 0) {
                     inputObject = oIStream.readObject();
+                    System.out.println("input: " + inputObject.toString());
                     doService(inputObject);
-                    System.out.println(inputObject.toString());
                     inputObject = null;
                 }
             }
@@ -90,14 +90,19 @@ public class ClientThread implements Runnable {
         } else if (inputObject instanceof RequestConversation) {
 
             outObj = DAO.getAllMessagesOfConversation((RequestConversation) inputObject);
+
+        } else if (inputObject.toString().equalsIgnoreCase("logging out")); {
+
+            loggingOut();
+
         }
 
         if (outObj != null) {
             oOStream.writeObject(outObj);
             oOStream.flush();
+            System.out.println("output: " + outObj.toString());
+            outObj = null;
         }
-        System.out.println(Objects.requireNonNull(outObj).toString());
-        outObj = null;
     }
 
     void listenerMode(String accName) {
@@ -115,5 +120,11 @@ public class ClientThread implements Runnable {
                 }
             }
         }
+    }
+
+    void loggingOut() {
+        //TODO clean the online account
+        //TODO change user status and save user last activity
+        //TODO switch off the listener mode
     }
 }

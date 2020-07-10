@@ -16,23 +16,23 @@ public class Client_1 {
         oos.flush();
         BufferedInputStream bis = new BufferedInputStream(s.getInputStream());
         ObjectInputStream ois = new ObjectInputStream(bis);
-
-        System.out.println(15);
 //        oos.writeObject(new LoginData("matin", "pass"));
-        oos.writeObject(new NewAccount("female", "parsazzzz", "Ali Jalili","pass","556776878"));
+//        oos.writeObject(new NewAccount("female", "parsazzzz", "Ali Jalili","pass","556776878"));
 //        oos.writeObject(new NewAccount("male", "matin", "Matin Vahedi","pass"));
 //        oos.writeObject(new NewAccount("male", "reza", "Reza Fathi","pass"));
-        oos.writeObject(new NewMessage( "reza", "afshin", "hello there", new Date(), false));
+//        oos.writeObject(new NewMessage( "reza", "afshin", "hello there", new Date(), false));
 //        oos.writeObject(new NewMessage( "reza", "matin", "hello there",new Date(), false));
 //        oos.writeObject(new NewMessage( "afshin", "matin", "hello there",new Date(), false));
 //        oos.writeObject(new NewMessage( 1594066866,"reza", "afshin", "hi", false, new Date()));
 //        oos.writeObject(new NewMessage( 1594066868, "reza", "matin", "hi",false, new Date()));
 //        oos.writeObject(new NewMessage( 1594066869,"afshin", "matin", "hi",false, new Date()));
+//        oos.writeObject(new RequestConversation(1594251156));
+        oos.writeObject("1W: matin");
+        oos.flush();
 
-        oos.writeObject("search: fdgdgdgdgdg");
 //        oos.writeObject("search: reza");
 //        oos.writeObject("search: yasin");
-        oos.flush();
+//        oos.flush();
 
 
 
@@ -40,18 +40,10 @@ public class Client_1 {
 
 
         while (true) {
-//            Scanner scanner = new Scanner(System.in);
-//            String str = scanner.nextLine();
-//            oos.writeObject(new NewMessage( 1594066869,"afshin", str,false, new Date()));
-//            oos.writeObject(new RequestConversation(1594066869));
-//            oos.flush();
+
             if (bis.available() > 0) {
-                System.out.println(ois.readObject().toString());
+            System.out.println(ois.readObject().toString());
             }
-            Thread.sleep(3000);
         }
-
-
-
     }
 }

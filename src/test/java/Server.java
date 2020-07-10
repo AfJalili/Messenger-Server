@@ -15,8 +15,8 @@ public class Server {
 class  Client {
     public static void main(String[] args) throws IOException {
 //        Socket socket = new Socket("localhost", 8888);
-
         Client client = new Client(new Socket("localhost", 8888));
+
     }
 
 

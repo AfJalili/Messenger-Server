@@ -27,7 +27,7 @@ public class Clinet_3 {
 //        oos.writeObject(new NewMessage( 1594066869,"afshin", "matin", "hi",false, new Date()));
 
 //        oos.writeObject("setting up user profile view");
-//        oos.writeObject("search: reza");
+        oos.writeObject("search: reza");
 //        oos.writeObject("search: yasin");
         oos.flush();
 
@@ -44,7 +44,7 @@ public class Clinet_3 {
             if (bis.available() > 0) {
                 System.out.println(ois.readObject().toString());
             }
-            Thread.sleep(3000);
+
         }
 
 

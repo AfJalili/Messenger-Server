@@ -1,12 +1,7 @@
-import model.NewMessage;
-
 import java.io.*;
-import java.net.Socket;
-import java.util.Date;
-import java.util.Scanner;
 
 public class Client_2 {
-    public static void main(String[] args) throws IOException, ClassNotFoundException {
+    /*public static void main(String[] args) throws IOException, ClassNotFoundException {
         Socket s = new Socket("localhost", 8888);
         BufferedOutputStream bos = new BufferedOutputStream(s.getOutputStream());
         ObjectOutputStream oos = new ObjectOutputStream(bos);
@@ -21,5 +16,13 @@ public class Client_2 {
                 System.out.println(ois.readObject().toString());
             }
         }
+    }*/
+    OneWaySocket ows = OneWaySocket.getInstance();
+    public Client_2() throws IOException, ClassNotFoundException {
+        print();
+    }
+
+    public void print() throws IOException, ClassNotFoundException {
+        System.out.println(ows.getData().toString());
     }
 }

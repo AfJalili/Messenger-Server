@@ -15,7 +15,7 @@ public class Main {
     public static void main(String[] args) throws IOException {
 
         WaitForClient();
-        testGetAllUsersInfo();
+
     }
 
     public static void WaitForClient() throws IOException {
@@ -33,10 +33,7 @@ public class Main {
 
     }
 
-    public static void testGetAllUsersInfo() {
-        DAO DAO = new DAOImpl();
-        System.out.println(DAO.searchAccName("a").toString());
-    }
+
 
 
 }
