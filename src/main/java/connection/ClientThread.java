@@ -33,7 +33,7 @@ public class ClientThread implements Runnable {
             oOStream.flush();
             oIStream = new ObjectInputStream(bIS);
 
-            while (clientSocket.isConnected()) {
+            while (!clientSocket.isClosed()) {
                 if (bIS.available() > 0) {
                     inputObject = oIStream.readObject();
                     System.out.println("input: " + inputObject.toString());
@@ -91,9 +91,13 @@ public class ClientThread implements Runnable {
 
             outObj = DAO.getAllMessagesOfConversation((RequestConversation) inputObject);
 
-        } else if (inputObject.toString().equalsIgnoreCase("logging out")); {
+        } else if (inputObject.toString().equalsIgnoreCase("logging out")) {
 
             loggingOut();
+
+        } else if (inputObject.toString().equalsIgnoreCase("close connection")) {
+
+            closeConnection();
 
         }
 
@@ -110,6 +114,7 @@ public class ClientThread implements Runnable {
             NewMessage nM = DAO.newMessageListener(accName);
             if (nM != null) {
                 try {
+                    System.out.println("new Message for " + accName + ": " + nM);
                     oOStream.writeObject(nM);
                     oOStream.flush();
                     nM = null;
@@ -123,8 +128,13 @@ public class ClientThread implements Runnable {
     }
 
     void loggingOut() {
-        //TODO clean the online account
+
+        this.onlineUserAccName = null;
         //TODO change user status and save user last activity
         //TODO switch off the listener mode
+    }
+
+    void closeConnection() throws IOException {
+        clientSocket.close();
     }
 }

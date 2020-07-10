@@ -27,7 +27,7 @@ public class Client_1 {
 //        oos.writeObject(new NewMessage( 1594066868, "reza", "matin", "hi",false, new Date()));
 //        oos.writeObject(new NewMessage( 1594066869,"afshin", "matin", "hi",false, new Date()));
 //        oos.writeObject(new RequestConversation(1594251156));
-        oos.writeObject("1W: matin");
+        oos.writeObject("close connection");
         oos.flush();
 
 //        oos.writeObject("search: reza");
